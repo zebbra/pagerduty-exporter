@@ -40,6 +40,7 @@ func (m *MetricsCollectorIncident) Setup(collector *collector.Collector) {
 			"assigned",
 			"type",
 			"time",
+			"priority",
 		},
 	)
 
@@ -93,6 +94,13 @@ func (m *MetricsCollectorIncident) Collect(callback chan<- func()) {
 			// info
 			createdAt, _ := time.Parse(time.RFC3339, incident.CreatedAt)
 
+			// priority
+			priority := ""
+
+			if incident.Priority != nil {
+				priority = incident.Priority.Name
+			}
+
 			incidentMetricList.AddTime(prometheus.Labels{
 				"incidentID":     incident.ID,
 				"serviceID":      incident.Service.ID,
@@ -105,6 +113,7 @@ func (m *MetricsCollectorIncident) Collect(callback chan<- func()) {
 				"assigned":       boolToString(len(incident.Assignments) >= 1),
 				"type":           incident.Type,
 				"time":           createdAt.Format(opts.PagerDuty.Incident.TimeFormat),
+				"priority":       priority,
 			}, createdAt)
 
 			// acknowledgement
